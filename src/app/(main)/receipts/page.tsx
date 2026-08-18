@@ -10,15 +10,7 @@ import { useReceipts } from "@/hooks";
 import { CreateTransactionModal } from "@/features/transactions";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/currency";
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { fileToBase64 } from "@/lib/file";
 
 export default function ReceiptsPage() {
   const inputRef = useRef<HTMLInputElement>(null);

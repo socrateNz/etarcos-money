@@ -115,7 +115,7 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
             Notifications
           </SheetTitle>
           <SheetDescription>
-            Gérez comment Etarcos Money interagit avec vous.
+            Gérez comment Tacynt Money interagit avec vous.
           </SheetDescription>
         </SheetHeader>
 

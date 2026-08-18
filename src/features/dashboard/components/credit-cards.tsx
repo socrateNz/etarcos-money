@@ -42,7 +42,7 @@ export function CreditCards() {
         {primaryAccount ? (
           <div className="relative z-10 flex flex-col justify-between h-full">
             <div className="flex justify-between items-start">
-              <span className="text-xl font-bold tracking-widest opacity-80">ETARCOS</span>
+              <span className="text-xl font-bold tracking-widest opacity-80">TACYNT</span>
               <Icon className="w-6 h-6 opacity-70" />
             </div>
 

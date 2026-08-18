@@ -1,4 +1,4 @@
-export const APP_NAME = "Etarcos Money AI";
+export const APP_NAME = "Tacynt Money AI";
 export const APP_VERSION = "1.0.0";
 export const DEFAULT_CURRENCY = "XAF";
 

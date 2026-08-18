@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ArrowRightLeft, Bot, PieChart, Target, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
 
 const NAV_ITEMS = [
   { name: "Accueil", href: "/", icon: Home },
@@ -19,6 +20,9 @@ export function SidebarNav() {
 
   return (
     <nav className="hidden sm:flex fixed left-0 top-0 bottom-0 w-[80px] flex-col items-center gap-2 py-6 border-r border-border bg-background/80 backdrop-blur-md z-50">
+      <Link href="/" title="Tacynt Money" className="mb-4">
+        <Logo size={40} className="rounded-xl shadow-sm shadow-primary/20" />
+      </Link>
       {NAV_ITEMS.map((item) => {
         const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
 

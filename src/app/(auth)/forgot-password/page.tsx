@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, MailCheck } from "lucide-react";
 import { authQueries } from "@/queries";
 import { toast } from "sonner";
+import { Logo } from "@/components/logo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,10 +32,15 @@ export default function ForgotPasswordPage() {
   return (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex-1 flex flex-col px-6 pt-20 pb-safe">
       <motion.div variants={slideUpItem} className="mb-10">
-        <Link href="/login" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="w-4 h-4" /> Retour
-        </Link>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Mot de passe oublié</h1>
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/login" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground -ml-1 p-1">
+            <ArrowLeft className="w-4 h-4" /> Retour
+          </Link>
+          <Logo size={44} className="rounded-2xl shadow-md shadow-primary/25" />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight mb-2 bg-gradient-to-r from-primary to-violet-500 bg-clip-text text-transparent">
+          Mot de passe oublié
+        </h1>
         <p className="text-muted-foreground">
           Entrez votre email, nous vous enverrons un lien de réinitialisation.
         </p>
@@ -53,15 +59,15 @@ export default function ForgotPasswordPage() {
             <label className="text-sm font-medium ml-1">Email</label>
             <Input
               type="email"
-              placeholder="socrate@etarcos.com"
+              placeholder="socrate@tacynt.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-14 rounded-2xl bg-muted/50 border-transparent focus:bg-background transition-colors px-4"
+              className="h-14 rounded-2xl bg-muted/50 border border-transparent focus:border-primary/30 focus:bg-background transition-colors px-4"
             />
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="h-14 rounded-2xl w-full text-base font-semibold mt-2 shadow-lg shadow-primary/20">
+          <Button type="submit" disabled={isSubmitting} className="h-14 rounded-2xl w-full text-base font-semibold mt-2 shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-violet-500 hover:opacity-90 transition-opacity border-0">
             {isSubmitting ? "Envoi..." : "Envoyer le lien"}
           </Button>
         </motion.form>

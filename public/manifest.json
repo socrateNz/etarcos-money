@@ -1,22 +1,30 @@
 {
-  "name": "Etarcos Money AI",
-  "short_name": "Etarcos Money",
+  "name": "Tacynt Money AI",
+  "short_name": "Tacynt Money",
   "description": "Assistant financier intelligent et gestion de budget",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0f172a",
+  "theme_color": "#4f46e5",
   "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }

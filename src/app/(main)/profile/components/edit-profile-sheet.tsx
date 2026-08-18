@@ -37,8 +37,7 @@ export function EditProfileSheet({ open, onOpenChange }: EditProfileSheetProps) 
 
   const mutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await authQueries.updateProfile(data);
-      return res.data?.data || res.data;
+      return authQueries.updateProfile(data);
     },
     onSuccess: (updatedUser) => {
       setUser({ ...user, ...updatedUser });

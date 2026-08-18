@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, ArrowRightLeft, Bot, PieChart, Target, User } from "lucide-react";
+import { Home, ArrowRightLeft, Bot, PieChart, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -12,7 +12,6 @@ const NAV_ITEMS = [
   { name: "IA", href: "/ai", icon: Bot },
   { name: "Budgets", href: "/budgets", icon: PieChart },
   { name: "Objectifs", href: "/goals", icon: Target },
-  { name: "Profil", href: "/profile", icon: User },
 ];
 
 export function BottomNav() {

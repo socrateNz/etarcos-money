@@ -15,7 +15,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     role: "assistant",
-    content: "Bonjour Socrate ! Je suis Etarcos AI. Comment puis-je vous aider avec vos finances aujourd'hui ?",
+    content: "Bonjour Socrate ! Je suis Tacynt AI. Comment puis-je vous aider avec vos finances aujourd'hui ?",
   },
 ];
 
@@ -83,7 +83,7 @@ export default function AiPage() {
             <Bot className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold tracking-tight">Etarcos AI</h1>
+            <h1 className="font-bold tracking-tight">Tacynt AI</h1>
             <p className="text-xs text-emerald-500 font-medium flex items-center gap-1">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

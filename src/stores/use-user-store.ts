@@ -11,6 +11,7 @@ interface UserState {
     country?: string;
     currency?: string;
     language?: string;
+    photo?: string;
     balance: number;
   } | null;
   isAuthenticated: boolean;
@@ -27,7 +28,7 @@ export const useUserStore = create<UserState>()(
       logout: () => set({ user: null, isAuthenticated: false }),
     }),
     {
-      name: "etarcos-user-storage",
+      name: "tacynt-user-storage",
     }
   )
 );

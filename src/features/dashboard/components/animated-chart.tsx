@@ -19,15 +19,15 @@ export function AnimatedChart({ data }: { data?: any[] }) {
         <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis 
-            dataKey="day" 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+          <XAxis
+            dataKey="day"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
             dy={10}
           />
           <Tooltip
@@ -54,7 +54,7 @@ export function AnimatedChart({ data }: { data?: any[] }) {
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="hsl(var(--primary))"
+            stroke="var(--primary)"
             strokeWidth={3}
             fillOpacity={1}
             fill="url(#colorBalance)"

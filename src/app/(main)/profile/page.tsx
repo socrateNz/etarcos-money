@@ -6,32 +6,53 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import {
-  Settings, Shield, Bell, Moon, Sun, Globe, Smartphone,
+  Camera, Loader2, Shield, Bell, Moon, Sun, Globe, Smartphone,
   Download, LogOut, ChevronRight, Landmark, Tag, Repeat, ScanLine, HeartPulse,
 } from "lucide-react";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { EditProfileSheet } from "./components/edit-profile-sheet";
 import { SecuritySheet } from "./components/security-sheet";
 import { NotificationsSheet } from "./components/notifications-sheet";
 import { toast } from "sonner";
 import { authQueries } from "@/queries";
 import { APP_NAME, APP_VERSION } from "@/config";
+import { fileToBase64 } from "@/lib/file";
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
   const router = useRouter();
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const base64Image = await fileToBase64(file);
+      const updatedUser = await authQueries.updatePhoto(base64Image);
+      setUser({ ...user, ...updatedUser });
+      toast.success("Photo de profil mise à jour");
+    } catch {
+      toast.error("Impossible de mettre à jour votre photo de profil.");
+    } finally {
+      setIsUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
   };
 
   const handleLanguageClick = async () => {
@@ -54,7 +75,7 @@ export default function ProfilePage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `etarcos-money-export-${new Date().toISOString().split("T")[0]}.json`;
+      link.download = `tacynt-money-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -107,19 +128,31 @@ export default function ProfilePage() {
       <motion.header variants={slideUpItem} className="py-4 mb-2 flex flex-col items-center justify-center">
         <div className="relative">
           <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-            <AvatarImage src="https://github.com/shadcn.png" alt={`@${user?.firstName || "socrate"}`} />
+            {user?.photo && <AvatarImage src={user.photo} alt={`@${user?.firstName || "socrate"}`} />}
             <AvatarFallback className="bg-primary/10 text-primary font-bold text-3xl">
               {(user?.firstName || "S").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full border-2 border-background shadow-sm">
-            <Settings className="w-4 h-4" />
-          </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+          <button
+            type="button"
+            onClick={() => photoInputRef.current?.click()}
+            disabled={isUploadingPhoto}
+            className="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full border-2 border-background shadow-sm disabled:opacity-70"
+          >
+            {isUploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+          </button>
         </div>
         <h1 className="text-2xl font-bold tracking-tight mt-4">
           {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "Socrate"}
         </h1>
-        <p className="text-muted-foreground text-sm">{user?.email || "socrate@etarcos.com"}</p>
+        <p className="text-muted-foreground text-sm">{user?.email || "socrate@tacynt.com"}</p>
 
         <Button
           className="mt-4 rounded-full px-6 shadow-sm"

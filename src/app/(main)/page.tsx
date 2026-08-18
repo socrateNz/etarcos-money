@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { staggerContainer, slideUpItem } from "@/styles/animations";
 import { AnimatedChart, QuickActions, CreditCards, RecentTransactions, AiAdvice } from "@/features/dashboard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,10 +29,12 @@ export default function HomePage() {
           <p className="text-sm text-muted-foreground font-medium">Bonjour</p>
           <h1 className="text-2xl font-bold tracking-tight">{firstName}</h1>
         </div>
-        <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-sm">
-          <AvatarImage src="https://github.com/shadcn.png" alt={`@${firstName}`} />
-          <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{firstName.charAt(0)}</AvatarFallback>
-        </Avatar>
+        <Link href="/profile">
+          <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-sm">
+            {user?.photo && <AvatarImage src={user.photo} alt={`@${firstName}`} />}
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{firstName.charAt(0)}</AvatarFallback>
+          </Avatar>
+        </Link>
       </motion.header>
       
       <motion.section variants={slideUpItem} className="mt-6">
