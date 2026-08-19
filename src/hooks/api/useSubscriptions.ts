@@ -23,6 +23,17 @@ export function useSubscriptions() {
     },
   });
 
+  const applyMutation = useMutation({
+    mutationFn: subscriptionQueries.apply,
+    onSuccess: () => {
+      // A transaction was created and an account balance changed, so refresh everything downstream too.
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.subscriptions });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transactions.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.accounts });
+    },
+  });
+
   return {
     subscriptions,
     isLoading,
@@ -31,5 +42,8 @@ export function useSubscriptions() {
     isCreating: createMutation.isPending,
     deleteSubscription: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
+    applySubscription: applyMutation.mutateAsync,
+    isApplying: applyMutation.isPending,
+    applyingId: applyMutation.variables,
   };
 }
