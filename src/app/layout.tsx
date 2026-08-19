@@ -33,6 +33,7 @@ export const viewport: Viewport = {
 
 import { ThemeProvider, ReactQueryProvider } from "@/providers";
 import { Toaster } from "sonner";
+import { APPLE_SPLASH_SCREENS } from "@/config/splash-screens";
 
 export default function RootLayout({
   children,
@@ -45,6 +46,13 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* iOS doesn't build a splash screen from the manifest like Android does, so it needs one
+            literal <link> per device size/orientation. See src/config/splash-screens.ts. */}
+        {APPLE_SPLASH_SCREENS.map((screen) => (
+          <link key={screen.href + screen.media} rel="apple-touch-startup-image" href={screen.href} media={screen.media} />
+        ))}
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ReactQueryProvider>
           <ThemeProvider
