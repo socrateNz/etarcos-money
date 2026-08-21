@@ -96,7 +96,7 @@ export default function AiPage() {
       </motion.header>
 
       {/* Chat Area */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 min-h-0 p-4" ref={scrollRef}>
         <div className="flex flex-col gap-2 pb-4">
           {messages.map((msg) => (
             <ChatMessage key={msg.id} role={msg.role} content={msg.content} />
