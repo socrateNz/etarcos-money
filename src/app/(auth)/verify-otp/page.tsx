@@ -150,7 +150,7 @@ function VerifyOtpForm() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium ml-1">Mot de passe</label>
+              <label className="text-sm font-medium ml-1">Mot de passe de l'ancien mail</label>
               <Input
                 type="password"
                 placeholder="••••••••"
