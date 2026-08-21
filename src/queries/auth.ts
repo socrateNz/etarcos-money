@@ -31,6 +31,10 @@ export const authQueries = {
     return api.post("/auth/resend-otp", { email });
   },
 
+  changePendingEmail: async (currentEmail: string, password: string, newEmail: string) => {
+    return api.post<any, { email: string }>("/auth/change-pending-email", { currentEmail, password, newEmail });
+  },
+
   logout: async () => {
     return api.post("/auth/logout");
   },

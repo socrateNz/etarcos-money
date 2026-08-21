@@ -37,6 +37,11 @@ export function useAuth() {
     mutationFn: authQueries.resendOtp,
   });
 
+  const changePendingEmailMutation = useMutation({
+    mutationFn: ({ currentEmail, password, newEmail }: { currentEmail: string; password: string; newEmail: string }) =>
+      authQueries.changePendingEmail(currentEmail, password, newEmail),
+  });
+
   const logout = async () => {
     try {
       await authQueries.logout();
@@ -54,6 +59,8 @@ export function useAuth() {
     isVerifyingOtp: verifyOtpMutation.isPending,
     resendOtp: resendOtpMutation.mutateAsync,
     isResendingOtp: resendOtpMutation.isPending,
+    changePendingEmail: changePendingEmailMutation.mutateAsync,
+    isChangingPendingEmail: changePendingEmailMutation.isPending,
     logout,
   };
 }
