@@ -114,7 +114,7 @@ function VerifyOtpForm() {
             onClick={() => setIsEditingEmail(true)}
             className="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline mt-2"
           >
-            <Pencil className="w-3.5 h-3.5" /> Ce n'est pas la bonne adresse ?
+            <Pencil className="w-3.5 h-3.5" /> Ajouter une adresse valide ?
           </button>
         )}
       </motion.div>
