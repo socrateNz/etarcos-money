@@ -11,4 +11,5 @@ export * from "./subscriptions";
 export * from "./notifications";
 export * from "./insights";
 export * from "./receipts";
+export * from "./admin";
 

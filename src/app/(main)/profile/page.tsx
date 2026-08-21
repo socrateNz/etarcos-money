@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import {
   Camera, Loader2, Shield, Bell, Moon, Sun, Globe, Smartphone,
-  Download, LogOut, ChevronRight, Landmark, Tag, Repeat, ScanLine, HeartPulse,
+  Download, LogOut, ChevronRight, Landmark, Tag, Repeat, ScanLine, HeartPulse, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import { useRef, useState } from "react";
 import { EditProfileSheet } from "./components/edit-profile-sheet";
 import { SecuritySheet } from "./components/security-sheet";
 import { NotificationsSheet } from "./components/notifications-sheet";
+import { ExportDataSheet } from "./components/export-data-sheet";
 import { toast } from "sonner";
 import { authQueries } from "@/queries";
 import { APP_NAME, APP_VERSION } from "@/config";
@@ -29,7 +30,7 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,27 +68,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleExportData = async () => {
-    setIsExporting(true);
-    try {
-      const data = await authQueries.exportData();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `tacynt-money-export-${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success("Vos données ont été téléchargées.");
-    } catch {
-      toast.error("L'export a échoué, réessayez.");
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const sections = [
     {
       title: "Outils financiers",
@@ -113,9 +93,15 @@ export default function ProfilePage() {
         { icon: Shield, label: "Sécurité & Confidentialité", onClick: () => setIsSecurityModalOpen(true) },
         { icon: Bell, label: "Préférences de notifications", onClick: () => setIsNotificationsModalOpen(true) },
         { icon: Smartphone, label: "Appareils connectés", value: "1", onClick: () => toast.info("Vous avez 1 appareil connecté (cet appareil).") },
-        { icon: Download, label: isExporting ? "Export en cours..." : "Exporter mes données", onClick: handleExportData },
+        { icon: Download, label: "Exporter mes données", onClick: () => setIsExportModalOpen(true) },
       ]
-    }
+    },
+    ...(user?.role === "ADMIN" ? [{
+      title: "Administration",
+      items: [
+        { icon: ShieldCheck, label: "Dashboard super admin", onClick: () => router.push("/admin") },
+      ]
+    }] : []),
   ];
 
   return (
@@ -226,6 +212,11 @@ export default function ProfilePage() {
       <NotificationsSheet
         open={isNotificationsModalOpen}
         onOpenChange={setIsNotificationsModalOpen}
+      />
+
+      <ExportDataSheet
+        open={isExportModalOpen}
+        onOpenChange={setIsExportModalOpen}
       />
     </motion.div>
   );

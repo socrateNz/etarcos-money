@@ -13,6 +13,7 @@ interface UserState {
     language?: string;
     photo?: string;
     balance: number;
+    role?: string;
   } | null;
   isAuthenticated: boolean;
   setUser: (user: UserState["user"]) => void;

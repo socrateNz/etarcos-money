@@ -11,6 +11,7 @@ export interface AuthUser {
   language?: string;
   photo?: string;
   balance: number;
+  role?: string;
 }
 
 export const authQueries = {
@@ -50,8 +51,11 @@ export const authQueries = {
     return api.put("/users/me/notifications", data);
   },
 
-  exportData: async () => {
-    return api.get("/users/me/export");
+  exportData: async (params?: { format?: "json" | "pdf"; startDate?: string; endDate?: string }) => {
+    return api.get("/users/me/export", {
+      params,
+      responseType: params?.format === "pdf" ? "blob" : "json",
+    });
   },
 
   forgotPassword: async (email: string) => {

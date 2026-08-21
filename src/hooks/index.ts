@@ -12,3 +12,4 @@ export * from "./api/useSubscriptions";
 export * from "./api/useNotifications";
 export * from "./api/useInsights";
 export * from "./api/useReceipts";
+export * from "./api/useAdmin";
