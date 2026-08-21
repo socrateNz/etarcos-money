@@ -20,7 +20,15 @@ export const authQueries = {
   },
   
   register: async (userData: Record<string, string>) => {
-    return api.post<{ accessToken: string }>("/auth/register", userData);
+    return api.post<{ id: string; email: string; requiresVerification: boolean }>("/auth/register", userData);
+  },
+
+  verifyOtp: async (email: string, otp: string) => {
+    return api.post<{ accessToken: string }>("/auth/verify-otp", { email, otp });
+  },
+
+  resendOtp: async (email: string) => {
+    return api.post("/auth/resend-otp", { email });
   },
 
   logout: async () => {

@@ -25,9 +25,9 @@ export default function RegisterPage() {
     setError("");
     try {
       await register({ firstName, email, password });
-      router.push("/");
+      router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      setError(err.message || "Erreur lors de l'inscription");
+      setError(err?.response?.data?.message || "Erreur lors de l'inscription");
     }
   };
 

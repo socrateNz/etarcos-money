@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminQueries } from "@/queries";
 
 export function useAdminStats() {
@@ -18,4 +18,35 @@ export function useAdminUsers(page: number, search: string) {
   });
 
   return { users: data?.data, pagination: data?.pagination, isLoading, error };
+}
+
+export function useBroadcasts(page: number) {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin", "broadcasts", page],
+    queryFn: () => adminQueries.getBroadcasts({ page, limit: 10 }),
+    placeholderData: (prev) => prev,
+  });
+
+  const sendTestMutation = useMutation({
+    mutationFn: adminQueries.sendTestBroadcast,
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: adminQueries.sendBroadcast,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "broadcasts"] });
+    },
+  });
+
+  return {
+    broadcasts: data?.data,
+    pagination: data?.pagination,
+    isLoading,
+    sendTest: sendTestMutation.mutateAsync,
+    isSendingTest: sendTestMutation.isPending,
+    send: sendMutation.mutateAsync,
+    isSending: sendMutation.isPending,
+  };
 }

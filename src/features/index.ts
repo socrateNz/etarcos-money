@@ -5,4 +5,5 @@ export * from "./navigation";
 export * from "./ai";
 export * from "./budgets";
 export * from "./goals";
+export * from "./admin";
 

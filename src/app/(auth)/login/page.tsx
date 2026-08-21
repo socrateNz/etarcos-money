@@ -26,7 +26,11 @@ export default function LoginPage() {
       await login({ email, password });
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Identifiants invalides");
+      if (err?.response?.data?.error?.code === "EMAIL_NOT_VERIFIED") {
+        router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+        return;
+      }
+      setError(err?.response?.data?.message || "Identifiants invalides");
     }
   };
 
@@ -101,18 +105,7 @@ export default function LoginPage() {
         </Button>
       </motion.form>
 
-      <motion.div variants={slideUpItem} className="mt-8 flex flex-col items-center">
-        <div className="flex items-center gap-3 w-full mb-6">
-          <div className="h-px flex-1 bg-border" />
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Ou continuer avec</p>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-        <Button variant="outline" className="h-16 w-16 rounded-full border-2 hover:border-primary/40 hover:bg-primary/5">
-          <Fingerprint className="w-8 h-8 text-foreground" />
-        </Button>
-      </motion.div>
-
-      <motion.div variants={slideUpItem} className="mt-auto pt-8 pb-4 flex justify-center items-center gap-2">
+      <motion.div variants={slideUpItem} className="pt-8 pb-4 flex justify-center items-center gap-2">
         <span className="text-muted-foreground text-sm">Nouveau sur Tacynt ?</span>
         <Link href="/register" className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
           Créer un compte <ArrowRight className="w-4 h-4" />

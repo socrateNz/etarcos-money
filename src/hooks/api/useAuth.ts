@@ -5,25 +5,36 @@ import { useUserStore } from "@/stores";
 export function useAuth() {
   const { setUser, logout: clearUser } = useUserStore();
 
+  const loginAndLoadProfile = async (accessToken: string) => {
+    localStorage.setItem("access_token", accessToken);
+    try {
+      const user = await authQueries.getProfile();
+      setUser(user);
+    } catch (err) {
+      setUser({ id: "1", firstName: "Utilisateur", email: "user@example.com", balance: 0 });
+    }
+  };
+
   const loginMutation = useMutation({
     mutationFn: authQueries.login,
     onSuccess: async (data: any) => {
-      localStorage.setItem("access_token", data.accessToken);
-      try {
-        const user = await authQueries.getProfile();
-        setUser(user);
-      } catch (err) {
-        setUser({ id: "1", firstName: "Utilisateur", email: "user@example.com", balance: 0 });
-      }
+      await loginAndLoadProfile(data.accessToken);
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: authQueries.register,
-    onSuccess: (data: any) => {
-      localStorage.setItem("access_token", data.accessToken);
-      setUser({ id: "1", firstName: "Utilisateur", email: "user@example.com", balance: 0 });
+  });
+
+  const verifyOtpMutation = useMutation({
+    mutationFn: ({ email, otp }: { email: string; otp: string }) => authQueries.verifyOtp(email, otp),
+    onSuccess: async (data: any) => {
+      await loginAndLoadProfile(data.accessToken);
     },
+  });
+
+  const resendOtpMutation = useMutation({
+    mutationFn: authQueries.resendOtp,
   });
 
   const logout = async () => {
@@ -39,6 +50,10 @@ export function useAuth() {
     isLoggingIn: loginMutation.isPending,
     register: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,
+    verifyOtp: verifyOtpMutation.mutateAsync,
+    isVerifyingOtp: verifyOtpMutation.isPending,
+    resendOtp: resendOtpMutation.mutateAsync,
+    isResendingOtp: resendOtpMutation.isPending,
     logout,
   };
 }
