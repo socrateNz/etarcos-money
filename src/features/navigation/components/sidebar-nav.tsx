@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ArrowRightLeft, Bot, PieChart, Target, User } from "lucide-react";
+import { Home, ArrowRightLeft, Bot, PieChart, Target, User, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
+import { useUserStore } from "@/stores";
 
 const NAV_ITEMS = [
   { name: "Accueil", href: "/", icon: Home },
@@ -17,13 +18,21 @@ const NAV_ITEMS = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { user } = useUserStore();
+
+  // Admin-only, and desktop-only by design: this component already never
+  // renders on mobile (see the "hidden sm:flex" below) — BottomNav is a
+  // separate component that doesn't include this item at all.
+  const items = user?.role === "ADMIN"
+    ? [...NAV_ITEMS, { name: "Admin", href: "/admin", icon: ShieldCheck }]
+    : NAV_ITEMS;
 
   return (
     <nav className="hidden sm:flex fixed left-0 top-0 bottom-0 w-[80px] flex-col items-center gap-2 py-6 border-r border-border bg-background/80 backdrop-blur-md z-50">
       <Link href="/" title="Tacynt Money" className="mb-4">
         <Logo size={40} className="rounded-xl shadow-sm shadow-primary/20" />
       </Link>
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
 
         return (

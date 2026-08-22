@@ -16,6 +16,11 @@ export function useTransactions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transactions.all });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
+      // The backend reverses the account balance on delete — without this,
+      // the accounts list (and anywhere it's read from, e.g. account
+      // dropdowns) keeps showing the pre-delete balance until something else
+      // happens to refetch it.
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.accounts });
     },
   });
 
@@ -56,6 +61,7 @@ export function useTransactions() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transactions.all });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.accounts });
     },
   });
 

@@ -4,6 +4,10 @@ import { useRef, useState } from "react";
 import { motion, useAnimation, PanInfo } from "framer-motion";
 import { Trash2, Edit2, Clock, type LucideIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface SwipeableTransactionProps {
   id: string | number;
@@ -34,7 +38,10 @@ export function SwipeableTransaction({
 }: SwipeableTransactionProps) {
   const controls = useAnimation();
   const [isSwiping, setIsSwiping] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const resetPosition = () => controls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 25 } });
 
   const handleDragEnd = async (
     event: MouseEvent | TouchEvent | PointerEvent,
@@ -43,7 +50,7 @@ export function SwipeableTransaction({
     // Nothing to edit/delete yet — it hasn't synced to the server, so it has
     // no real id (and may still fail once actually sent).
     if (isPending) {
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 25 } });
+      resetPosition();
       return;
     }
 
@@ -52,23 +59,31 @@ export function SwipeableTransaction({
     const velocity = info.velocity.x;
 
     if (offset < -SWIPE_THRESHOLD || velocity < -500) {
-      // Swiped left (Delete)
+      // Swiped left: hold the "revealed" position and ask for confirmation
+      // before actually deleting anything.
       await controls.start({ x: -100, transition: { type: "spring", stiffness: 300, damping: 20 } });
-      setTimeout(() => {
-        onDelete?.(id);
-        controls.start({ x: 0 }); // reset after delete
-      }, 300);
+      setConfirmOpen(true);
     } else if (offset > SWIPE_THRESHOLD || velocity > 500) {
-      // Swiped right (Edit)
+      // Swiped right (Edit) — not destructive, no confirmation needed.
       await controls.start({ x: 100, transition: { type: "spring", stiffness: 300, damping: 20 } });
       setTimeout(() => {
         onEdit?.(id);
-        controls.start({ x: 0 }); // reset
+        resetPosition();
       }, 300);
     } else {
-      // Return to center
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 25 } });
+      resetPosition();
     }
+  };
+
+  const handleConfirmDelete = () => {
+    setConfirmOpen(false);
+    onDelete?.(id);
+    resetPosition();
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
+    resetPosition();
   };
 
   return (
@@ -120,6 +135,27 @@ export function SwipeableTransaction({
           {formatCurrency(amount)}
         </div>
       </motion.div>
+
+      <Dialog open={confirmOpen} onOpenChange={(open) => !open && handleCancelDelete()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer cette transaction ?</DialogTitle>
+            <DialogDescription>
+              "{title}" ({amount > 0 ? "+" : ""}
+              {formatCurrency(amount)}) sera définitivement supprimée et le solde du compte sera ajusté en conséquence.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelDelete}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

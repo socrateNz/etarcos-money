@@ -20,6 +20,9 @@ export interface AdminUser {
   role: "USER" | "ADMIN";
   currency: string;
   financialScore: number;
+  // Absent on accounts created before OTP verification existed — treat as
+  // verified unless explicitly false (same rule the backend login uses).
+  isEmailVerified?: boolean;
   createdAt: string;
 }
 

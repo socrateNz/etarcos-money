@@ -77,6 +77,7 @@ export default function AdminUsersPage() {
               <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
                 <th className="px-2 py-2 font-medium">Utilisateur</th>
                 <th className="px-2 py-2 font-medium">Rôle</th>
+                <th className="px-2 py-2 font-medium">Statut</th>
                 <th className="px-2 py-2 font-medium">Devise</th>
                 <th className="px-2 py-2 font-medium">Score</th>
                 <th className="px-2 py-2 font-medium">Inscrit le</th>
@@ -85,10 +86,10 @@ export default function AdminUsersPage() {
             </thead>
             <tbody>
               {usersLoading && (
-                <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Chargement...</td></tr>
+                <tr><td colSpan={7} className="px-2 py-6 text-center text-muted-foreground">Chargement...</td></tr>
               )}
               {!usersLoading && users?.length === 0 && (
-                <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Aucun utilisateur trouvé.</td></tr>
+                <tr><td colSpan={7} className="px-2 py-6 text-center text-muted-foreground">Aucun utilisateur trouvé.</td></tr>
               )}
               {!usersLoading && users?.map((u) => {
                 const isSelf = u._id === currentUser?.id;
@@ -101,6 +102,14 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-2 py-3">
                       <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{u.role}</Badge>
+                    </td>
+                    <td className="px-2 py-3">
+                      <Badge
+                        variant={u.isEmailVerified === false ? "destructive" : "secondary"}
+                        className={u.isEmailVerified === false ? "" : "text-emerald-600 dark:text-emerald-400"}
+                      >
+                        {u.isEmailVerified === false ? "Non vérifié" : "Vérifié"}
+                      </Badge>
                     </td>
                     <td className="px-2 py-3 text-muted-foreground">{u.currency}</td>
                     <td className="px-2 py-3 text-muted-foreground">{u.financialScore}</td>
