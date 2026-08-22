@@ -5,19 +5,38 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, Users as UsersIcon } from "lucide-react";
+import { ArrowLeft, Search, ChevronLeft, ChevronRight, Users as UsersIcon, Trash2, Loader2 } from "lucide-react";
 import { staggerContainer, slideUpItem } from "@/styles/animations";
 import { useAdminUsers } from "@/hooks";
+import { useUserStore } from "@/stores";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import type { AdminUser } from "@/queries";
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
 
-  const { users, pagination, isLoading: usersLoading } = useAdminUsers(page, search);
+  const { user: currentUser } = useUserStore();
+  const { users, pagination, isLoading: usersLoading, deleteUser, isDeleting, deletingId } = useAdminUsers(page, search);
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteUser(userToDelete._id);
+      toast.success(`${userToDelete.email} a été supprimé.`);
+      setUserToDelete(null);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Impossible de supprimer cet utilisateur.");
+    }
+  };
 
   return (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="p-4 flex flex-col sm:p-6">
@@ -53,7 +72,7 @@ export default function AdminUsersPage() {
         </form>
 
         <div className="overflow-x-auto -mx-1">
-          <table className="w-full text-sm min-w-[520px]">
+          <table className="w-full text-sm min-w-[620px]">
             <thead>
               <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
                 <th className="px-2 py-2 font-medium">Utilisateur</th>
@@ -61,31 +80,47 @@ export default function AdminUsersPage() {
                 <th className="px-2 py-2 font-medium">Devise</th>
                 <th className="px-2 py-2 font-medium">Score</th>
                 <th className="px-2 py-2 font-medium">Inscrit le</th>
+                <th className="px-2 py-2 font-medium text-right">Action</th>
               </tr>
             </thead>
             <tbody>
               {usersLoading && (
-                <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">Chargement...</td></tr>
+                <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Chargement...</td></tr>
               )}
               {!usersLoading && users?.length === 0 && (
-                <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">Aucun utilisateur trouvé.</td></tr>
+                <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Aucun utilisateur trouvé.</td></tr>
               )}
-              {!usersLoading && users?.map((u) => (
-                <tr key={u._id} className="border-b border-border/60 last:border-0">
-                  <td className="px-2 py-3">
-                    <p className="font-medium">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
-                  </td>
-                  <td className="px-2 py-3">
-                    <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{u.role}</Badge>
-                  </td>
-                  <td className="px-2 py-3 text-muted-foreground">{u.currency}</td>
-                  <td className="px-2 py-3 text-muted-foreground">{u.financialScore}</td>
-                  <td className="px-2 py-3 text-muted-foreground whitespace-nowrap">
-                    {format(new Date(u.createdAt), "d MMM yyyy", { locale: fr })}
-                  </td>
-                </tr>
-              ))}
+              {!usersLoading && users?.map((u) => {
+                const isSelf = u._id === currentUser?.id;
+                const isDeletingThis = isDeleting && deletingId === u._id;
+                return (
+                  <tr key={u._id} className="border-b border-border/60 last:border-0">
+                    <td className="px-2 py-3">
+                      <p className="font-medium">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</p>
+                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    </td>
+                    <td className="px-2 py-3">
+                      <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{u.role}</Badge>
+                    </td>
+                    <td className="px-2 py-3 text-muted-foreground">{u.currency}</td>
+                    <td className="px-2 py-3 text-muted-foreground">{u.financialScore}</td>
+                    <td className="px-2 py-3 text-muted-foreground whitespace-nowrap">
+                      {format(new Date(u.createdAt), "d MMM yyyy, HH:mm", { locale: fr })}
+                    </td>
+                    <td className="px-2 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setUserToDelete(u)}
+                        disabled={isSelf || isDeletingThis}
+                        title={isSelf ? "Vous ne pouvez pas supprimer votre propre compte" : "Supprimer cet utilisateur"}
+                        className="p-2 text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-30 disabled:hover:text-muted-foreground disabled:cursor-not-allowed"
+                      >
+                        {isDeletingThis ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -116,6 +151,26 @@ export default function AdminUsersPage() {
           </div>
         )}
       </motion.div>
+
+      <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer cet utilisateur ?</DialogTitle>
+            <DialogDescription>
+              Vous êtes sur le point de supprimer <strong>{userToDelete?.email}</strong> et toutes ses données (comptes, transactions, budgets, objectifs, etc.). Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUserToDelete(null)} disabled={isDeleting}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+              {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Supprimer définitivement
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

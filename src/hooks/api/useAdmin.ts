@@ -11,13 +11,31 @@ export function useAdminStats() {
 }
 
 export function useAdminUsers(page: number, search: string) {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin", "users", page, search],
     queryFn: () => adminQueries.getUsers({ page, limit: 20, search: search || undefined }),
     placeholderData: (prev) => prev,
   });
 
-  return { users: data?.data, pagination: data?.pagination, isLoading, error };
+  const deleteMutation = useMutation({
+    mutationFn: adminQueries.deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+
+  return {
+    users: data?.data,
+    pagination: data?.pagination,
+    isLoading,
+    error,
+    deleteUser: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
+    deletingId: deleteMutation.variables,
+  };
 }
 
 export function useBroadcasts(page: number) {

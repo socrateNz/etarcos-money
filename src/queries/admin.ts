@@ -50,6 +50,9 @@ export const adminQueries = {
   getUsers: async (params: { page?: number; limit?: number; search?: string }) => {
     return api.get<any, AdminUsersResponse>("/admin/users", { params });
   },
+  deleteUser: async (id: string) => {
+    return api.delete<any, { deletedUserId: string; email: string }>(`/admin/users/${id}`);
+  },
   getBroadcasts: async (params: { page?: number; limit?: number }) => {
     return api.get<any, BroadcastsResponse>("/admin/broadcast", { params });
   },
