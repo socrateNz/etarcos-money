@@ -73,7 +73,7 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.accountId) {
       alert("Veuillez sélectionner un compte ou en créer un.");
@@ -82,28 +82,30 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
 
     const selectedAccount = accounts?.find((a) => (a.id || a._id) === formData.accountId);
 
-    try {
-      await createTransaction({
-        description: formData.description,
-        amount: Number(formData.amount),
-        type: formData.type === "income" ? "INCOME" : "EXPENSE",
-        date: new Date(formData.date).toISOString(),
-        accountId: formData.accountId,
-        categoryId: formData.categoryId || undefined,
-        currency: selectedAccount?.currency || DEFAULT_CURRENCY,
-      } as any);
-      setIsOpen(false);
-      setFormData({
-        description: "",
-        amount: "",
-        type: defaultType,
-        date: new Date().toISOString().split("T")[0],
-        accountId: accounts?.[0]?.id || accounts?.[0]?._id || "",
-        categoryId: "",
-      });
-    } catch (err) {
-      console.error("Failed to create transaction", err);
-    }
+    // Intentionally not awaited: the optimistic update (see useTransactions)
+    // already reflects this in the list instantly, including while offline —
+    // where the actual request pauses until reconnected and could otherwise
+    // leave this sheet stuck open indefinitely. Failures still surface via
+    // the global mutation-error toast.
+    createTransaction({
+      description: formData.description,
+      amount: Number(formData.amount),
+      type: formData.type === "income" ? "INCOME" : "EXPENSE",
+      date: new Date(formData.date).toISOString(),
+      accountId: formData.accountId,
+      categoryId: formData.categoryId || undefined,
+      currency: selectedAccount?.currency || DEFAULT_CURRENCY,
+    } as any).catch(() => {});
+
+    setIsOpen(false);
+    setFormData({
+      description: "",
+      amount: "",
+      type: defaultType,
+      date: new Date().toISOString().split("T")[0],
+      accountId: accounts?.[0]?.id || accounts?.[0]?._id || "",
+      categoryId: "",
+    });
   };
 
   return (

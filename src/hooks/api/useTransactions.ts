@@ -19,10 +19,41 @@ export function useTransactions() {
     },
   });
 
-  // Create transaction
+  // Create transaction — optimistic, so it shows up instantly (including
+  // while offline: onMutate always runs first, the actual request is what
+  // gets paused/queued by the app-wide offline mutation handling).
   const createMutation = useMutation({
     mutationFn: transactionQueries.create,
-    onSuccess: () => {
+    onMutate: async (newTx: any) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.transactions.all });
+      const previous = queryClient.getQueryData<any[]>(QUERY_KEYS.transactions.all);
+
+      const categories = queryClient.getQueryData<any[]>(QUERY_KEYS.categories);
+      const accounts = queryClient.getQueryData<any[]>(QUERY_KEYS.accounts);
+      const category = categories?.find((c) => c._id === newTx.categoryId);
+      const account = accounts?.find((a) => (a.id || a._id) === newTx.accountId);
+
+      const optimisticTx = {
+        ...newTx,
+        _id: `optimistic-${Date.now()}`,
+        categoryId: category
+          ? { _id: category._id, name: category.name, icon: category.icon, color: category.color }
+          : undefined,
+        accountId: account ? { _id: account.id || account._id, name: account.name, type: account.type } : newTx.accountId,
+        createdAt: new Date().toISOString(),
+        _optimistic: true,
+      };
+
+      queryClient.setQueryData<any[]>(QUERY_KEYS.transactions.all, (old) => [optimisticTx, ...(old || [])]);
+
+      return { previous };
+    },
+    onError: (_err, _newTx, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(QUERY_KEYS.transactions.all, context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transactions.all });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
     },

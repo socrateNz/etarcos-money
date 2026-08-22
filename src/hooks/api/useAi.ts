@@ -10,7 +10,18 @@ export function useAi() {
   });
 
   const chatMutation = useMutation({
-    mutationFn: aiQueries.chat,
+    mutationFn: (message: string) => {
+      // The AI assistant is explicitly excluded from the app's offline
+      // support: a message queued while offline and replayed hours later,
+      // out of context, would be more confusing than just failing now.
+      if (!navigator.onLine) {
+        return Promise.reject(new Error("L'assistant IA nécessite une connexion internet."));
+      }
+      return aiQueries.chat(message);
+    },
+    // Attempt immediately and fail fast instead of the app-wide default of
+    // pausing until back online (see providers/query-provider.tsx).
+    networkMode: "always",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ai.history });
     },

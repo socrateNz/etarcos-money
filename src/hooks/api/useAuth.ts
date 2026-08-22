@@ -5,8 +5,9 @@ import { useUserStore } from "@/stores";
 export function useAuth() {
   const { setUser, logout: clearUser } = useUserStore();
 
-  const loginAndLoadProfile = async (accessToken: string) => {
+  const loginAndLoadProfile = async (accessToken: string, refreshToken: string) => {
     localStorage.setItem("access_token", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
     try {
       const user = await authQueries.getProfile();
       setUser(user);
@@ -18,7 +19,7 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: authQueries.login,
     onSuccess: async (data: any) => {
-      await loginAndLoadProfile(data.accessToken);
+      await loginAndLoadProfile(data.accessToken, data.refreshToken);
     },
   });
 
@@ -29,7 +30,7 @@ export function useAuth() {
   const verifyOtpMutation = useMutation({
     mutationFn: ({ email, otp }: { email: string; otp: string }) => authQueries.verifyOtp(email, otp),
     onSuccess: async (data: any) => {
-      await loginAndLoadProfile(data.accessToken);
+      await loginAndLoadProfile(data.accessToken, data.refreshToken);
     },
   });
 
@@ -43,10 +44,12 @@ export function useAuth() {
   });
 
   const logout = async () => {
+    const refreshToken = localStorage.getItem("refresh_token");
     try {
-      await authQueries.logout();
+      await authQueries.logout(refreshToken);
     } catch (e) {} // Ignore error if token already invalid
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     clearUser();
   };
 

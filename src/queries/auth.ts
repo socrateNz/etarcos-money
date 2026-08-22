@@ -14,17 +14,22 @@ export interface AuthUser {
   role?: string;
 }
 
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export const authQueries = {
   login: async (credentials: Record<string, string>) => {
-    return api.post<{ accessToken: string }>("/auth/login", credentials);
+    return api.post<TokenPair>("/auth/login", credentials);
   },
-  
+
   register: async (userData: Record<string, string>) => {
     return api.post<{ id: string; email: string; requiresVerification: boolean }>("/auth/register", userData);
   },
 
   verifyOtp: async (email: string, otp: string) => {
-    return api.post<{ accessToken: string }>("/auth/verify-otp", { email, otp });
+    return api.post<TokenPair>("/auth/verify-otp", { email, otp });
   },
 
   resendOtp: async (email: string) => {
@@ -35,12 +40,12 @@ export const authQueries = {
     return api.post<any, { email: string }>("/auth/change-pending-email", { currentEmail, password, newEmail });
   },
 
-  logout: async () => {
-    return api.post("/auth/logout");
+  logout: async (refreshToken: string | null) => {
+    return api.post("/auth/logout", { refreshToken });
   },
 
-  refresh: async () => {
-    return api.post<{ accessToken: string }>("/auth/refresh");
+  refresh: async (refreshToken: string) => {
+    return api.post<TokenPair>("/auth/refresh", { refreshToken });
   },
 
   getProfile: async () => {

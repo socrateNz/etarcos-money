@@ -38,7 +38,8 @@ export default function TransactionsPage() {
     date: format(new Date(tx.date), "d MMM, HH:mm", { locale: fr }),
     icon: getIcon(tx.categoryId?.icon),
     colorClass: tx.categoryId?.color ? `text-[${tx.categoryId.color}] bg-[${tx.categoryId.color}]/10` : "bg-primary/10 text-primary",
-    type: tx.type === "INCOME" ? "income" : "expense"
+    type: tx.type === "INCOME" ? "income" : "expense",
+    isPending: !!tx._optimistic,
   }));
 
   const transactions = mappedApiTransactions && mappedApiTransactions.length > 0 ? mappedApiTransactions : [];
@@ -118,7 +119,7 @@ export default function TransactionsPage() {
       {/* Transactions List */}
       <motion.div variants={slideUpItem} className="flex flex-col">
         <AnimatePresence>
-          {filteredTransactions.map((tx: { id: string | number; title: string; category: string; amount: number; date: string; icon: LucideIcon; colorClass: string; }) => (
+          {filteredTransactions.map((tx: { id: string | number; title: string; category: string; amount: number; date: string; icon: LucideIcon; colorClass: string; isPending?: boolean; }) => (
             <motion.div
               key={tx.id}
               initial={{ opacity: 0, height: 0 }}
@@ -134,6 +135,7 @@ export default function TransactionsPage() {
                 date={tx.date}
                 icon={tx.icon}
                 colorClass={tx.colorClass!}
+                isPending={tx.isPending}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
               />
