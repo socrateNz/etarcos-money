@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Fingerprint, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks";
 import { Logo } from "@/components/logo";
+import { InstallAppButton } from "@/components/install-app-button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -105,7 +106,11 @@ export default function LoginPage() {
         </Button>
       </motion.form>
 
-      <motion.div variants={slideUpItem} className="pt-8 pb-4 flex justify-center items-center gap-2">
+      <motion.div variants={slideUpItem} className="pt-8 flex justify-center">
+        <InstallAppButton />
+      </motion.div>
+
+      <motion.div variants={slideUpItem} className="pt-4 pb-4 flex justify-center items-center gap-2">
         <span className="text-muted-foreground text-sm">Nouveau sur Tacynt ?</span>
         <Link href="/register" className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
           Créer un compte <ArrowRight className="w-4 h-4" />

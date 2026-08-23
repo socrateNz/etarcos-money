@@ -1,6 +1,7 @@
 // Hooks export
 export * from "./use-haptic";
 export * from "./use-online-status";
+export * from "./use-pwa-install";
 export * from "./api/useAuth";
 export * from "./api/useDashboard";
 export * from "./api/useTransactions";
