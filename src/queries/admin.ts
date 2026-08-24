@@ -1,7 +1,11 @@
 import { api } from "@/lib/axios";
 
+export type BroadcastAudience = "all" | "verified" | "unverified";
+
 export interface AdminStats {
   totalUsers: number;
+  verifiedUsers: number;
+  unverifiedUsers: number;
   newUsers7d: number;
   newUsers30d: number;
   totalAccounts: number;
@@ -35,6 +39,7 @@ export interface Broadcast {
   _id: string;
   subject: string;
   body: string;
+  audience: BroadcastAudience;
   recipientCount: number;
   successCount: number;
   failureCount: number;
@@ -59,7 +64,7 @@ export const adminQueries = {
   getBroadcasts: async (params: { page?: number; limit?: number }) => {
     return api.get<any, BroadcastsResponse>("/admin/broadcast", { params });
   },
-  sendBroadcast: async (data: { subject: string; body: string }) => {
+  sendBroadcast: async (data: { subject: string; body: string; audience?: BroadcastAudience }) => {
     return api.post<any, Broadcast>("/admin/broadcast", data);
   },
   sendTestBroadcast: async (data: { subject: string; body: string }) => {

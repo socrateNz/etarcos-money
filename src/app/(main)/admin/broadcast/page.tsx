@@ -14,10 +14,25 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import type { BroadcastAudience } from "@/queries/admin";
+
+const AUDIENCE_OPTIONS: { value: BroadcastAudience; label: string }[] = [
+  { value: "all", label: "Tous" },
+  { value: "verified", label: "Vérifiés" },
+  { value: "unverified", label: "Non vérifiés" },
+];
+
+const AUDIENCE_LABELS: Record<BroadcastAudience, string> = {
+  all: "Tous",
+  verified: "Vérifiés",
+  unverified: "Non vérifiés",
+};
 
 export default function AdminBroadcastPage() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [audience, setAudience] = useState<BroadcastAudience>("all");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -25,6 +40,14 @@ export default function AdminBroadcastPage() {
   const { broadcasts, pagination, isLoading, sendTest, isSendingTest, send, isSending } = useBroadcasts(page);
 
   const canSend = subject.trim().length > 0 && body.trim().length > 0;
+
+  const recipientCount = stats
+    ? audience === "verified"
+      ? stats.verifiedUsers
+      : audience === "unverified"
+        ? stats.unverifiedUsers
+        : stats.totalUsers
+    : undefined;
 
   const handleSendTest = async () => {
     try {
@@ -37,11 +60,12 @@ export default function AdminBroadcastPage() {
 
   const handleConfirmSend = async () => {
     try {
-      const res = await send({ subject, body });
+      const res = await send({ subject, body, audience });
       toast.success(`Diffusion envoyée à ${res.successCount}/${res.recipientCount} utilisateur(s).`);
       setConfirmOpen(false);
       setSubject("");
       setBody("");
+      setAudience("all");
       setPage(1);
     } catch {
       toast.error("L'envoi de la diffusion a échoué.");
@@ -58,7 +82,7 @@ export default function AdminBroadcastPage() {
           <Mail className="w-6 h-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Diffusion</h1>
-            <p className="text-muted-foreground text-sm">Envoyer un email à tous les utilisateurs</p>
+            <p className="text-muted-foreground text-sm">Envoyer un email à vos utilisateurs</p>
           </div>
         </div>
       </motion.header>
@@ -88,6 +112,38 @@ export default function AdminBroadcastPage() {
             />
           </div>
 
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">Destinataires</label>
+            <div className="flex gap-1 p-1 bg-muted rounded-xl">
+              {AUDIENCE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setAudience(opt.value)}
+                  className={cn(
+                    "flex-1 rounded-lg py-2 text-sm font-medium transition-colors",
+                    audience === opt.value
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {opt.label}
+                  {stats && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (
+                      {opt.value === "verified"
+                        ? stats.verifiedUsers
+                        : opt.value === "unverified"
+                          ? stats.unverifiedUsers
+                          : stats.totalUsers}
+                      )
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               type="button"
@@ -106,11 +162,11 @@ export default function AdminBroadcastPage() {
               onClick={() => setConfirmOpen(true)}
             >
               <Send className="w-4 h-4 mr-2" />
-              Envoyer à tous {stats ? `(${stats.totalUsers})` : ""}
+              Envoyer {recipientCount !== undefined ? `(${recipientCount})` : ""}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Testez toujours l'email avant de l'envoyer à tout le monde — cette action est irréversible.
+            Testez toujours l'email avant de l'envoyer — cette action est irréversible.
           </p>
         </div>
       </motion.div>
@@ -129,6 +185,8 @@ export default function AdminBroadcastPage() {
                   <p className="font-medium">{b.subject}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {format(new Date(b.createdAt), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                    {" · "}
+                    {AUDIENCE_LABELS[b.audience ?? "all"]}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs shrink-0">
@@ -165,7 +223,8 @@ export default function AdminBroadcastPage() {
           <DialogHeader>
             <DialogTitle>Confirmer l'envoi</DialogTitle>
             <DialogDescription>
-              Vous êtes sur le point d'envoyer "{subject}" à <strong>{stats?.totalUsers ?? "tous les"}</strong> utilisateur(s). Cette action est irréversible.
+              Vous êtes sur le point d'envoyer "{subject}" à <strong>{recipientCount ?? "tous les"}</strong> utilisateur(s)
+              {" "}({AUDIENCE_LABELS[audience].toLowerCase()}). Cette action est irréversible.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
