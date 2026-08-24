@@ -105,10 +105,10 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-2 py-3">
                       <Badge
-                        variant={u.isEmailVerified === false ? "destructive" : "secondary"}
-                        className={u.isEmailVerified === false ? "" : "text-emerald-600 dark:text-emerald-400"}
+                        variant={u.isEmailVerified === true ? "secondary" : "destructive"}
+                        className={u.isEmailVerified === true ? "text-emerald-600 dark:text-emerald-400" : ""}
                       >
-                        {u.isEmailVerified === false ? "Non vérifié" : "Vérifié"}
+                        {u.isEmailVerified === true ? "Vérifié" : "Non vérifié"}
                       </Badge>
                     </td>
                     <td className="px-2 py-3 text-muted-foreground">{u.currency}</td>
