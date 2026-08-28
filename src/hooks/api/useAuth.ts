@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { authQueries } from "@/queries";
 import { useUserStore } from "@/stores";
+import { clearLocalUserData } from "@/lib/query-client";
 
 export function useAuth() {
   const { setUser, logout: clearUser } = useUserStore();
@@ -51,6 +52,8 @@ export function useAuth() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     clearUser();
+    useUserStore.persist.clearStorage();
+    await clearLocalUserData();
   };
 
   return {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useUserStore } from "@/stores";
 import { API_BASE_URL } from "@/config";
+import { clearLocalUserData } from "@/lib/query-client";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -30,7 +31,10 @@ const forceLogout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
   useUserStore.getState().logout();
-  window.location.href = "/login";
+  useUserStore.persist.clearStorage();
+  clearLocalUserData().finally(() => {
+    window.location.href = "/login";
+  });
 };
 
 // Shared across concurrent 401s so a burst of requests triggers exactly one
