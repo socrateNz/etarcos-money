@@ -20,6 +20,10 @@ export const transactionQueries = {
     return api.post<any, any>("/transactions", data);
   },
   
+  update: async ({ id, data }: { id: string | number; data: Record<string, any> }) => {
+    return api.patch<any, any>(`/transactions/${id}`, data);
+  },
+
   delete: async (id: string | number) => {
     return api.delete<any, any>(`/transactions/${id}`);
   }

@@ -18,6 +18,8 @@ export default function TransactionsPage() {
   const { transactions: apiTransactions, isLoading, deleteTransaction } = useTransactions();
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
   const [search, setSearch] = useState("");
+  const [editingTx, setEditingTx] = useState<any | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -50,8 +52,11 @@ export default function TransactionsPage() {
   };
 
   const handleEdit = (id: string | number) => {
-    console.log("Edit transaction", id);
-    // Open edit modal or bottom sheet here
+    const tx = apiTransactions?.find((t: any) => t._id === id);
+    if (tx) {
+      setEditingTx(tx);
+      setIsEditOpen(true);
+    }
   };
 
   const filteredTransactions = transactions.filter((tx: { type: string; title: string; }) => {
@@ -152,6 +157,12 @@ export default function TransactionsPage() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      <CreateTransactionModal
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        transaction={editingTx ?? undefined}
+      />
     </motion.div>
   );
 }

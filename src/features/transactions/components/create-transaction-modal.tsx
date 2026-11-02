@@ -12,14 +12,24 @@ interface CreateTransactionModalProps {
   onOpenChange?: (open: boolean) => void;
   defaultType?: "income" | "expense";
   initialValues?: { description?: string; amount?: number; date?: string };
+  /** Raw API transaction — when set, the sheet edits it instead of creating one. */
+  transaction?: any;
 }
 
-export function CreateTransactionModal({ children, open, onOpenChange, defaultType = "expense", initialValues }: CreateTransactionModalProps) {
+const toDateInput = (value: string | Date) => {
+  const d = new Date(value);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+export function CreateTransactionModal({ children, open, onOpenChange, defaultType = "expense", initialValues, transaction }: CreateTransactionModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = onOpenChange || setInternalOpen;
 
-  const { createTransaction, isCreating } = useTransactions();
+  const { createTransaction, isCreating, updateTransaction, isUpdating } = useTransactions();
+  const isEdit = !!transaction;
+  const isTransfer = transaction?.type === "TRANSFER";
   const { accounts, isLoading: isLoadingAccounts } = useAccounts();
   const { categories } = useCategories();
 
@@ -34,6 +44,17 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
 
   // Reset type/values when the modal is (re)opened with new defaults (e.g. prefilled from a receipt)
   useEffect(() => {
+    if (isOpen && transaction) {
+      setFormData({
+        description: transaction.description || "",
+        amount: String(transaction.amount ?? ""),
+        type: transaction.type === "INCOME" ? "income" : "expense",
+        date: toDateInput(transaction.date),
+        accountId: transaction.accountId?._id || transaction.accountId || "",
+        categoryId: transaction.categoryId?._id || transaction.categoryId || "",
+      });
+      return;
+    }
     if (isOpen) {
       setFormData(prev => ({
         ...prev,
@@ -44,7 +65,7 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
       }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, defaultType]);
+  }, [isOpen, defaultType, transaction]);
 
   // Set default account if accounts are loaded and none is selected
   useEffect(() => {
@@ -82,6 +103,27 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
 
     const selectedAccount = accounts?.find((a) => (a.id || a._id) === formData.accountId);
 
+    if (isEdit) {
+      const data: Record<string, any> = {
+        description: formData.description,
+        amount: Number(formData.amount),
+        accountId: formData.accountId,
+        currency: selectedAccount?.currency || transaction.currency || DEFAULT_CURRENCY,
+      };
+      if (!isTransfer) {
+        data.type = formData.type === "income" ? "INCOME" : "EXPENSE";
+        if (formData.categoryId) data.categoryId = formData.categoryId;
+      }
+      // Only send the date if it changed, so the original time of day is kept.
+      if (formData.date !== toDateInput(transaction.date)) {
+        data.date = new Date(formData.date).toISOString();
+      }
+      // Not awaited for the same reason as create below (optimistic update).
+      updateTransaction({ id: transaction._id, data }).catch(() => {});
+      setIsOpen(false);
+      return;
+    }
+
     // Intentionally not awaited: the optimistic update (see useTransactions)
     // already reflects this in the list instantly, including while offline —
     // where the actual request pauses until reconnected and could otherwise
@@ -113,14 +155,14 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
       {children && <SheetTrigger asChild>{children}</SheetTrigger>}
       <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl sm:h-auto sm:max-w-md sm:right-0 sm:top-0 sm:side-right sm:rounded-none">
         <SheetHeader className="mb-6 text-left">
-          <SheetTitle className="text-2xl font-bold">Nouvelle transaction</SheetTitle>
+          <SheetTitle className="text-2xl font-bold">{isEdit ? "Modifier la transaction" : "Nouvelle transaction"}</SheetTitle>
           <SheetDescription>
-            Ajoutez une dépense ou un revenu à votre compte.
+            {isEdit ? "Mettez à jour les informations de cette transaction." : "Ajoutez une dépense ou un revenu à votre compte."}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 pb-4">
-          <div>
+          {!isTransfer && <div>
             <label className="text-sm font-medium mb-1.5 block">Type</label>
             <div className="flex bg-muted p-1 rounded-xl">
               <Button
@@ -140,7 +182,7 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
                 Revenu
               </Button>
             </div>
-          </div>
+          </div>}
 
           <div>
             <label className="text-sm font-medium mb-1.5 block">
@@ -180,7 +222,7 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
                 onChange={handleChange}
               />
             </div>
-            <div>
+            {!isTransfer && <div>
               <label className="text-sm font-medium mb-1.5 block">Catégorie</label>
               <select
                 name="categoryId"
@@ -193,7 +235,7 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
                   <option key={cat._id} value={cat._id}>{cat.name}</option>
                 ))}
               </select>
-            </div>
+            </div>}
           </div>
 
           <div>
@@ -213,8 +255,10 @@ export function CreateTransactionModal({ children, open, onOpenChange, defaultTy
             </select>
           </div>
 
-          <Button type="submit" disabled={isCreating} className="w-full mt-4 py-6 text-lg rounded-xl shadow-lg shadow-primary/25">
-            {isCreating ? "Création..." : "Ajouter la transaction"}
+          <Button type="submit" disabled={isCreating || isUpdating} className="w-full mt-4 py-6 text-lg rounded-xl shadow-lg shadow-primary/25">
+            {isEdit
+              ? (isUpdating ? "Enregistrement..." : "Enregistrer les modifications")
+              : (isCreating ? "Création..." : "Ajouter la transaction")}
           </Button>
         </form>
       </SheetContent>
